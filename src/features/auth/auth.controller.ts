@@ -3,6 +3,7 @@ import UserModel from "../../models/user-model";
 import IUserModel from "../../models/user-model/index.types";
 import { UserRegistration, userRegistrationSchema } from './auth.validation';
 import log from '../../utils/logger';
+import { encrypt } from '../../utils/passwordHashing';
 
 class AuthController {
   private userModel: IUserModel;
@@ -99,11 +100,17 @@ class AuthController {
 
           return;
         }
-      
+
+        // hash the password
+        const hashedPassword = encrypt(validatedUser.password);
+
+        // TODO handle race-condition when two users try to create new account
+        // using the same email (validated in DB level)
+        // store the new user in the database
         const createdUser = await this.userModel.createUser(
           validatedUser.name,
           validatedUser.email,
-          validatedUser.password
+          hashedPassword
         );
         
         res.statusCode = 201;
@@ -113,7 +120,7 @@ class AuthController {
           data: {
             id: createdUser.id,
             name: createdUser.name,
-            email: createdUser.email
+            email: createdUser.email,
           }
         }));
 

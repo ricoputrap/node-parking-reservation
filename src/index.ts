@@ -1,11 +1,8 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
-import dotenv from 'dotenv';
+
 import authRoute from './features/auth/auth.route';
 import log from './utils/logger';
-
-dotenv.config();
-
-const PORT = process.env.PORT || 3000;
+import { PORT } from '../config/constants';
 
 const server = createServer((req: IncomingMessage, res: ServerResponse) => {
   res.setHeader('Content-Type', 'application/json');
