@@ -20,6 +20,7 @@ const authRoute = (req: IncomingMessage, res: ServerResponse) => {
         return;
 
       case EnumPaths.LOGIN:
+        authController.handleLogin(req, res);
         break;
 
       case EnumPaths.LOGOUT:

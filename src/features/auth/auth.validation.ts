@@ -9,3 +9,11 @@ export const userRegistrationSchema = z.object({
 
 // Create a type for TypeScript
 export type UserRegistration = z.infer<typeof userRegistrationSchema>;
+
+export const userLoginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+});
+
+// Create a type for TypeScript
+export type UserLogin = z.infer<typeof userLoginSchema>;
