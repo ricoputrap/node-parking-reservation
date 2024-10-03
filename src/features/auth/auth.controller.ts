@@ -5,9 +5,11 @@ import { UserLogin, UserRegistration, userLoginSchema, userRegistrationSchema } 
 import log from '../../utils/logger';
 import { encrypt } from '../../utils/passwordHashing';
 import { generateAccessToken, generateRefreshToken, setHttpOnlyCookie, verifyAccessToken, verifyRefreshToken } from '../../utils/token';
-import { EnumUserRole } from '../../../config/enums';
+import { EnumHttpStatus, EnumUserRole } from '../../../config/enums';
 import { ONE_DAY_IN_SECONDS } from '../../../config/constants';
 import { IPayload } from '../../utils/token/index.types';
+import { handleSchemaValidationError, parseData } from '../../utils/validations';
+import { sendResponse } from '../../utils/http';
 
 /**
  * The key will be the token string.
@@ -172,6 +174,8 @@ class AuthController {
   }
 
   async handleLogin(req: IncomingMessage, res: ServerResponse) {
+    const LOG_PREFIX = "[AuthController] handleLogin";
+
     try {
       let body: string = '';
 
@@ -181,50 +185,15 @@ class AuthController {
 
       req.on('end', async () => {
         // Parse the incoming JSON body
-        let loginData: unknown; // Using unknown to enforce validation
-        try {
-          loginData = JSON.parse(body);
-        }
-        catch (error) {
-          res.statusCode = 400;
-          res.write(JSON.stringify({
-            success: false,
-            message: 'Invalid JSON format'
-          }));
-          res.end();
-
-          // log the error
-          log("[AuthController] hanldeLogin: Invalid JSON format");
-
-          return;
-        }
+        const loginData = parseData(res, body, LOG_PREFIX);
+        if (!loginData) return;
 
         // Validate the incoming data using Zod
         const parsedResult = userLoginSchema.safeParse(loginData);
 
         // validation failed
         if (!parsedResult.success) {
-          const errors: {
-            email?: string;
-            password?: string;
-          } = {};
-
-          // Extract the validation errors
-          for (const error of parsedResult.error.errors) {
-            errors[error.path[0] as keyof typeof errors] = error.message;
-          }
-
-          res.statusCode = 400;
-          res.write(JSON.stringify({
-            success: false,
-            message: "Validation failed",
-            errors
-          }));
-          res.end();
-
-          // log the error
-          log(`[AuthController] hanldeLogin: Validation failed ${JSON.stringify(errors)}`);
-
+          handleSchemaValidationError(res, parsedResult.error.errors, LOG_PREFIX);
           return;
         }
 
@@ -234,14 +203,12 @@ class AuthController {
         // check if user exists
         const existingUser = await this.userModel.getUser(validatedUser.email);
         if (!existingUser) {
-          res.statusCode = 404;
-          res.write(JSON.stringify({
+          sendResponse({
+            res,
+            status: EnumHttpStatus.NOT_FOUND,
             success: false,
             message: 'User not found'
-          }));
-          res.end();
-
-          // log the error
+          })
           log(`[AuthController] hanldeLogin: User not found with email "${validatedUser.email}"`);
 
           return;
@@ -252,14 +219,12 @@ class AuthController {
 
         // password doesn't match
         if (hashedPassword !== existingUser.password) {
-          res.statusCode = 401;
-          res.write(JSON.stringify({
+          sendResponse({
+            res,
+            status: EnumHttpStatus.UNAUTHORIZED,
             success: false,
             message: 'Incorrect password'
-          }));
-          res.end();
-
-          // log the error
+          })
           log(`[AuthController] hanldeLogin: Incorrect password for email "${validatedUser.email}"`);
 
           return;
@@ -273,15 +238,14 @@ class AuthController {
         const maxAge = ONE_DAY_IN_SECONDS * 30; // 30 days
         setHttpOnlyCookie(res, 'refreshToken', refreshToken, { maxAge });
 
-        res.statusCode = 200;
-        res.write(JSON.stringify({
+        // send response
+        sendResponse({
+          res,
+          status: EnumHttpStatus.OK,
           success: true,
-          message: "Login successful",
-          data: {
-            accessToken
-          }
-        }));
-        res.end();
+          message: 'Login successful',
+          data: { accessToken }
+        });
 
         // log the success
         log(`[AuthController] hanldeLogin: Login successful for email "${validatedUser.email}"`);
@@ -290,12 +254,12 @@ class AuthController {
       });
     }
     catch (error: any) {
-      res.statusCode = 500;
-      res.write(JSON.stringify({
+      sendResponse({
+        res,
+        status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
         success: false,
         message: error.message
-      }));
-      res.end();
+      });
 
       // log the error
       log(`[AuthController] hanldeLogin: ${error.message}`);
