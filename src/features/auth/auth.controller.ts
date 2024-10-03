@@ -1,15 +1,14 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import UserModel from "../../models/user-model";
 import IUserModel, { ICreateUserResult } from "../../models/user-model/index.types";
-import { UserLogin, UserRegistration, userLoginSchema, userRegistrationSchema } from './auth.validation';
+import { UserRegistration, userRegistrationSchema } from './auth.validation';
 import log from '../../utils/logger';
 import { encrypt } from '../../utils/passwordHashing';
-import { generateAccessToken, generateRefreshToken, setHttpOnlyCookie, verifyAccessToken, verifyRefreshToken } from '../../utils/token';
+import { verifyAccessToken, verifyRefreshToken } from '../../utils/token';
 import { EnumHttpStatus, EnumUserRole } from '../../../config/enums';
-import { ONE_DAY_IN_SECONDS } from '../../../config/constants';
 import { IPayload } from '../../utils/token/index.types';
-import { handleSchemaValidationError, parseData } from '../../utils/validations';
 import { sendResponse } from '../../utils/http';
+import login from './handlers/login';
 
 /**
  * The key will be the token string.
@@ -173,97 +172,28 @@ class AuthController {
     }
   }
 
-  async handleLogin(req: IncomingMessage, res: ServerResponse) {
-    const LOG_PREFIX = "[AuthController] handleLogin";
+  handleLogin(req: IncomingMessage, res: ServerResponse) {
+    let body: string = '';
 
-    try {
-      let body: string = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
 
-      req.on('data', (chunk) => {
-        body += chunk;
-      });
+    req.on('end', async () => {
+      try {
+        await login(res, body, this.userModel);
+      }
+      catch (error: any) {
+        log(`[AuthController] hanldeLogin: ${error.message}`);
 
-      req.on('end', async () => {
-        // Parse the incoming JSON body
-        const loginData = parseData(res, body, LOG_PREFIX);
-        if (!loginData) return;
-
-        // Validate the incoming data using Zod
-        const parsedResult = userLoginSchema.safeParse(loginData);
-
-        // validation failed
-        if (!parsedResult.success) {
-          handleSchemaValidationError(res, parsedResult.error.errors, LOG_PREFIX);
-          return;
-        }
-
-        // Extract the validated data
-        const validatedUser: UserLogin = parsedResult.data;
-
-        // check if user exists
-        const existingUser = await this.userModel.getUser(validatedUser.email);
-        if (!existingUser) {
-          sendResponse({
-            res,
-            status: EnumHttpStatus.NOT_FOUND,
-            success: false,
-            message: 'User not found'
-          })
-          log(`[AuthController] hanldeLogin: User not found with email "${validatedUser.email}"`);
-
-          return;
-        }
-
-        // check if password is correct
-        const hashedPassword = encrypt(validatedUser.password);
-
-        // password doesn't match
-        if (hashedPassword !== existingUser.password) {
-          sendResponse({
-            res,
-            status: EnumHttpStatus.UNAUTHORIZED,
-            success: false,
-            message: 'Incorrect password'
-          })
-          log(`[AuthController] hanldeLogin: Incorrect password for email "${validatedUser.email}"`);
-
-          return;
-        }
-
-        // generate access and refresh tokens
-        const accessToken = generateAccessToken(existingUser);
-        const refreshToken = generateRefreshToken(existingUser);
-
-        // Set the refresh token in an HTTP-only cookie
-        const maxAge = ONE_DAY_IN_SECONDS * 30; // 30 days
-        setHttpOnlyCookie(res, 'refreshToken', refreshToken, { maxAge });
-
-        // send response
         sendResponse({
           res,
-          status: EnumHttpStatus.OK,
-          success: true,
-          message: 'Login successful',
-          data: { accessToken }
+          status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          message: error.message
         });
-
-        // log the success
-        log(`[AuthController] hanldeLogin: Login successful for email "${validatedUser.email}"`);
-
-        return;
-      });
-    }
-    catch (error: any) {
-      sendResponse({
-        res,
-        status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
-        success: false,
-        message: error.message
-      });
-
-      // log the error
-      log(`[AuthController] hanldeLogin: ${error.message}`);
-    }
+      }
+    });
   }
 
   async handleLogout(req: IncomingMessage, res: ServerResponse) {
