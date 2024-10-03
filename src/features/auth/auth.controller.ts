@@ -8,19 +8,7 @@ import { IPayload } from '../../utils/token/index.types';
 import { sendResponse } from '../../utils/http';
 import login from './handlers/login';
 import register from './handlers/register';
-
-/**
- * The key will be the token string.
- * The value will be in seconds, representing the unix timestamp
- * when the token will expire.
- * 
- * Utilize cronjob to clear the blacklisted tokens
- * when they are expired.
- * 
- * TODO: Utilize Redis
- */
-const blacklistedAccessTokens: Record<string, number> = {};
-const blacklistedRefreshTokens: Record<string, number> = {};
+import logout from './handlers/logout';
 
 class AuthController {
   private userModel: IUserModel;
@@ -41,7 +29,7 @@ class AuthController {
    * @throws {Error} - If there is an error while parsing the JSON body or
    * validating the data.
    */
-  async handleRegister(req: IncomingMessage, res: ServerResponse) {
+  handleRegister(req: IncomingMessage, res: ServerResponse) {
     let body: string = '';
 
     req.on('data', (chunk) => {
@@ -84,7 +72,7 @@ class AuthController {
           res,
           status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
           success: false,
-          message: error.message
+          message: error.message || 'An unexpected error occurred'
         });
       }
     });
@@ -92,120 +80,17 @@ class AuthController {
 
   async handleLogout(req: IncomingMessage, res: ServerResponse) {
     try {
-      const authHeader = req.headers['authorization'];
-
-      // auth header not found
-      if (!authHeader) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Authorization header not found'
-        }));
-        res.end();
-        return;
-      }
-
-      // extract token from auth header
-      const token = authHeader.split(' ')[1];
-
-      // token not found in auth header
-      if (!token) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Authorization token not found'
-        }));
-        res.end();
-        return;
-      }
-
-      // check if token is blacklisted
-      if (blacklistedAccessTokens[token]) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Access token is blacklisted already'
-        }));
-        res.end();
-        return;
-      }
-
-      // verify token
-      const decoded: IPayload = verifyAccessToken(token) as IPayload;
-
-      // access token is invalid
-      if (!decoded) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Invalid access token'
-        }));
-        res.end();
-        return;
-      }
-
-      // blacklist the access token
-      blacklistedAccessTokens[token] = decoded.exp
-
-      // read the refresh token from cookie httpOnly
-      const cookies = req.headers.cookie;
-
-      if (!cookies) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Authorization cookie is missing'
-        }));
-        res.end();
-        return;
-      }
-
-      const refreshTokenCookie = cookies.split(';').find((cookie) => cookie.trim().startsWith('refreshToken='));
-      if (!refreshTokenCookie) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Refresh token not found'
-        }));
-        res.end();
-        return;
-      }
-
-      const refreshToken = refreshTokenCookie.split('=')[1];
-
-      // check if refresh token is blacklisted
-      if (blacklistedRefreshTokens[refreshToken]) {
-        res.statusCode = 401;
-        res.write(JSON.stringify({
-          success: false,
-          message: 'Refresh token is blacklisted already'
-        }));
-        res.end();
-        return;
-      }
-
-      const decodedRefreshToken = verifyRefreshToken(refreshToken) as IPayload;
-
-      // blacklist the refresh token
-      blacklistedRefreshTokens[refreshToken] = decodedRefreshToken.exp
-
-      // remove refreshToken from the cookie
-      res.setHeader('Set-Cookie', 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;');
-
-      res.statusCode = 200;
-      res.write(JSON.stringify({
-        success: true,
-        message: "Logout successful"
-      }));
-      res.end();
+      await logout(req, res);
     }
     catch (error: any) {
-      res.statusCode = 500;
-      res.write(JSON.stringify({
+      log(`[AuthController] hanldeLogout: ${error.message}`);
+
+      sendResponse({
+        res,
+        status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
         success: false,
-        message: error.message || 'Something went wrong'
-      }));
-      res.end();
+        message: error.message || 'An unexpected error occurred'
+      });
     }
   }
 
