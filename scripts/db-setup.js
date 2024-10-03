@@ -1,0 +1,72 @@
+const { DatabaseSync } = require('node:sqlite');
+
+const db = new DatabaseSync('database.db');
+
+const CREATE_TABLE_GARAGE = `
+  CREATE TABLE IF NOT EXISTS GARAGE (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    price_per_hour DECIMAL(10, 2) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT 1
+  )
+`;
+db.exec(CREATE_TABLE_GARAGE);
+
+const CREATE_TABLE_USER = `
+  CREATE TABLE IF NOT EXISTS USER (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    role TEXT CHECK(role IN ('garage_admin', 'user')) NOT NULL DEFAULT 'user',
+    active BOOLEAN NOT NULL DEFAULT 1
+  )
+`;
+db.exec(CREATE_TABLE_USER);
+
+const CREATE_TABLE_GARAGE_ADMIN = `
+  CREATE TABLE IF NOT EXISTS GARAGE_ADMIN (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    garage_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY(garage_id) REFERENCES GARAGE(id),
+    FOREIGN KEY(user_id) REFERENCES USER(id)
+  )
+`;
+db.exec(CREATE_TABLE_GARAGE_ADMIN);
+
+const CREATE_TABLE_PARKING_SPOT = `
+  CREATE TABLE IF NOT EXISTS PARKING_SPOT (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    reserved BOOLEAN NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT 1,
+    garage_id INTEGER NOT NULL,
+    FOREIGN KEY(garage_id) REFERENCES GARAGE(id)
+  )
+`;
+db.exec(CREATE_TABLE_PARKING_SPOT);
+
+const CREATE_TABLE_RESERVATION = `
+  CREATE TABLE IF NOT EXISTS RESERVATION (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'active', 'completed', 'cancelled')) NOT NULL,
+    user_id INTEGER NOT NULL,
+    parking_spot_id INTEGER NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES USER(id),
+    FOREIGN KEY(parking_spot_id) REFERENCES PARKING_SPOT(id)
+  )
+`;
+db.exec(CREATE_TABLE_RESERVATION);
+
+const CREATE_TABLE_PAYMENT = `
+  CREATE TABLE IF NOT EXISTS PAYMENT (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    amount DECIMAL(10, 2) NOT NULL,
+    reservation_id INTEGER NOT NULL,
+    FOREIGN KEY(reservation_id) REFERENCES RESERVATION(id)
+  )
+`;
+db.exec(CREATE_TABLE_PAYMENT);
