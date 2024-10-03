@@ -1,6 +1,8 @@
 import { ServerResponse } from 'http';
 import log from '../logger';
 import { ZodIssue } from 'zod';
+import { sendResponse } from '../http';
+import { EnumHttpStatus } from '../../../config/enums';
 
 /**
  * Parse the incoming JSON body, and return the parsed data if successful.
@@ -62,13 +64,13 @@ export const handleSchemaValidationError = (
     errors[error.path[0] as keyof typeof errors] = error.message;
   }
 
-  res.statusCode = 400;
-  res.write(JSON.stringify({
+  sendResponse({
+    res,
+    status: EnumHttpStatus.BAD_REQUEST,
     success: false,
     message: "Validation failed",
     errors
-  }));
-  res.end();
+  })
 
   // log the error
   log(`${logPrefix}: Validation failed ${JSON.stringify(errors)}`);

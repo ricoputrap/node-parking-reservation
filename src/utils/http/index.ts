@@ -7,6 +7,7 @@ interface Params {
   success: boolean,
   message: string,
   data?: any
+  errors?: Record<string, string>
 }
 
 /**
@@ -19,13 +20,14 @@ interface Params {
  * @param {string} params.message A message to be included in the response.
  * @param {any} [params.data] Optional data to be included in the response.
  */
-export const sendResponse = ({ res, status, success, message, data }: Params) => {
+export const sendResponse = ({ res, status, success, message, data, errors }: Params) => {
   res.statusCode = status;
 
   res.write(JSON.stringify({
     success,
     message,
-    data
+    data,
+    errors
   }));
 
   res.end();
