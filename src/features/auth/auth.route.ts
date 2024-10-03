@@ -24,6 +24,7 @@ const authRoute = (req: IncomingMessage, res: ServerResponse) => {
         break;
 
       case EnumPaths.LOGOUT:
+        authController.handleLogout(req, res);
         break;
 
       case EnumPaths.REFRESH:

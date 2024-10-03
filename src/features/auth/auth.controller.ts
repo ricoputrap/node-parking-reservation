@@ -4,8 +4,23 @@ import IUserModel, { ICreateUserResult } from "../../models/user-model/index.typ
 import { UserLogin, UserRegistration, userLoginSchema, userRegistrationSchema } from './auth.validation';
 import log from '../../utils/logger';
 import { encrypt } from '../../utils/passwordHashing';
-import { generateAccessToken, generateRefreshToken } from '../../utils/token';
+import { generateAccessToken, generateRefreshToken, setHttpOnlyCookie, verifyAccessToken, verifyRefreshToken } from '../../utils/token';
 import { EnumUserRole } from '../../../config/enums';
+import { ONE_DAY_IN_SECONDS } from '../../../config/constants';
+import { IPayload } from '../../utils/token/index.types';
+
+/**
+ * The key will be the token string.
+ * The value will be in seconds, representing the unix timestamp
+ * when the token will expire.
+ * 
+ * Utilize cronjob to clear the blacklisted tokens
+ * when they are expired.
+ * 
+ * TODO: Utilize Redis
+ */
+const blacklistedAccessTokens: Record<string, number> = {};
+const blacklistedRefreshTokens: Record<string, number> = {};
 
 class AuthController {
   private userModel: IUserModel;
@@ -187,6 +202,7 @@ class AuthController {
         // Validate the incoming data using Zod
         const parsedResult = userLoginSchema.safeParse(loginData);
 
+        // validation failed
         if (!parsedResult.success) {
           const errors: {
             email?: string;
@@ -253,13 +269,16 @@ class AuthController {
         const accessToken = generateAccessToken(existingUser);
         const refreshToken = generateRefreshToken(existingUser);
 
+        // Set the refresh token in an HTTP-only cookie
+        const maxAge = ONE_DAY_IN_SECONDS * 30; // 30 days
+        setHttpOnlyCookie(res, 'refreshToken', refreshToken, { maxAge });
+
         res.statusCode = 200;
         res.write(JSON.stringify({
           success: true,
           message: "Login successful",
           data: {
-            accessToken,
-            refreshToken
+            accessToken
           }
         }));
         res.end();
@@ -283,7 +302,124 @@ class AuthController {
     }
   }
 
-  async handleLogout(req: IncomingMessage, res: ServerResponse) {}
+  async handleLogout(req: IncomingMessage, res: ServerResponse) {
+    try {
+      const authHeader = req.headers['authorization'];
+
+      // auth header not found
+      if (!authHeader) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Authorization header not found'
+        }));
+        res.end();
+        return;
+      }
+
+      // extract token from auth header
+      const token = authHeader.split(' ')[1];
+
+      // token not found in auth header
+      if (!token) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Authorization token not found'
+        }));
+        res.end();
+        return;
+      }
+
+      // check if token is blacklisted
+      if (blacklistedAccessTokens[token]) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Access token is blacklisted already'
+        }));
+        res.end();
+        return;
+      }
+
+      // verify token
+      const decoded: IPayload = verifyAccessToken(token) as IPayload;
+
+      // access token is invalid
+      if (!decoded) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Invalid access token'
+        }));
+        res.end();
+        return;
+      }
+
+      // blacklist the access token
+      blacklistedAccessTokens[token] = decoded.exp
+
+      // read the refresh token from cookie httpOnly
+      const cookies = req.headers.cookie;
+
+      if (!cookies) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Authorization cookie is missing'
+        }));
+        res.end();
+        return;
+      }
+
+      const refreshTokenCookie = cookies.split(';').find((cookie) => cookie.trim().startsWith('refreshToken='));
+      if (!refreshTokenCookie) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Refresh token not found'
+        }));
+        res.end();
+        return;
+      }
+
+      const refreshToken = refreshTokenCookie.split('=')[1];
+
+      // check if refresh token is blacklisted
+      if (blacklistedRefreshTokens[refreshToken]) {
+        res.statusCode = 401;
+        res.write(JSON.stringify({
+          success: false,
+          message: 'Refresh token is blacklisted already'
+        }));
+        res.end();
+        return;
+      }
+
+      const decodedRefreshToken = verifyRefreshToken(refreshToken) as IPayload;
+
+      // blacklist the refresh token
+      blacklistedRefreshTokens[refreshToken] = decodedRefreshToken.exp
+
+      // remove refreshToken from the cookie
+      res.setHeader('Set-Cookie', 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;');
+
+      res.statusCode = 200;
+      res.write(JSON.stringify({
+        success: true,
+        message: "Logout successful"
+      }));
+      res.end();
+    }
+    catch (error: any) {
+      res.statusCode = 500;
+      res.write(JSON.stringify({
+        success: false,
+        message: error.message || 'Something went wrong'
+      }));
+      res.end();
+    }
+  }
 
   async handleRefresh(req: IncomingMessage, res: ServerResponse) {}
 }

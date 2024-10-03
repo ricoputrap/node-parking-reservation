@@ -3,8 +3,6 @@ import IUser from "../../entity/user.entity";
 import log from "../../utils/logger";
 import IUserModel, { ICreateUserResult, INewUser } from "./index.types";
 
-const users: IUser[] = [];
-
 class UserModel implements IUserModel {
 
   async getUser(email: string): Promise<IUser | undefined> {
