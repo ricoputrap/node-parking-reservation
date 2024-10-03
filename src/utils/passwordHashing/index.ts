@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { CRYPTO_ALGO, CRYPTO_IV, CRYPTO_KEY } from '../../../config/constants';
 
 // createCipheriv & createDecipheriv()

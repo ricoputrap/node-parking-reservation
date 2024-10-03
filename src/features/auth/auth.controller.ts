@@ -1,10 +1,11 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import UserModel from "../../models/user-model";
-import IUserModel from "../../models/user-model/index.types";
+import IUserModel, { ICreateUserResult } from "../../models/user-model/index.types";
 import { UserLogin, UserRegistration, userLoginSchema, userRegistrationSchema } from './auth.validation';
 import log from '../../utils/logger';
 import { encrypt } from '../../utils/passwordHashing';
 import { generateAccessToken, generateRefreshToken } from '../../utils/token';
+import { EnumUserRole } from '../../../config/enums';
 
 class AuthController {
   private userModel: IUserModel;
@@ -105,29 +106,40 @@ class AuthController {
         // hash the password
         const hashedPassword = encrypt(validatedUser.password);
 
-        // TODO handle race-condition when two users try to create new account
-        // using the same email (validated in DB level)
-        // store the new user in the database
-        const createdUser = await this.userModel.createUser(
-          validatedUser.name,
-          validatedUser.email,
-          hashedPassword
-        );
-        
-        res.statusCode = 201;
+        // create the user
+        const result: ICreateUserResult = await this.userModel.createUser({
+          name: validatedUser.name,
+          email: validatedUser.email,
+          password: hashedPassword,
+          role: EnumUserRole.USER
+        });
+
+        if (result.success && result.data) {
+          res.statusCode = 201;
+          res.write(JSON.stringify({
+            success: true,
+            message: "User created successfully",
+            data: {
+              id: result.data.id,
+              name: result.data.name,
+              email: result.data.email,
+              role: result.data.role
+            }
+          }));
+          res.end();
+
+          // log the success
+          log(`[AuthController] hanldeRegister: User created successfully with id ${result.data.id}`);
+          return;
+        }
+
+        // error while creating user
+        res.statusCode = 400;
         res.write(JSON.stringify({
-          success: true,
-          message: "User created successfully",
-          data: {
-            id: createdUser.id,
-            name: createdUser.name,
-            email: createdUser.email,
-          }
+          success: false,
+          message: result.message || "Failed to create user",
+          errors: result.errors
         }));
-
-        // log the success
-        log(`[AuthController] hanldeRegister: User created successfully with id ${createdUser.id}`);
-
         res.end();
       });
     }
@@ -135,7 +147,7 @@ class AuthController {
       res.statusCode = 500;
       res.write(JSON.stringify({
         success: false,
-        message: error.message
+        message: error.message || 'An unexpected error occurred'
       }));
       res.end();
 

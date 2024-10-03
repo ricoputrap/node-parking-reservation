@@ -1,11 +1,11 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
 
-import authRoute from './features/auth/auth.route';
-import log from './utils/logger';
-import { PORT } from '../config/constants';
-import spotsRoute from './features/spots/spots.route';
-import reservationsRoute from './features/reservations/reservations.route';
-import paymentsRoute from './features/payments/payments.route';
+import authRoute from './src/features/auth/auth.route';
+import log from './src/utils/logger';
+import { PORT } from './config/constants';
+import spotsRoute from './src/features/spots/spots.route';
+import reservationsRoute from './src/features/reservations/reservations.route';
+import paymentsRoute from './src/features/payments/payments.route';
 
 const notFoundHandler = (req: IncomingMessage, res: ServerResponse) => {
   res.statusCode = 404;

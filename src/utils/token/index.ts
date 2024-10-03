@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import IUser from "../../entity/user.entity";
 
 const ACCESS_TOKEN_SECRET: string = process.env.ACCESS_TOKEN_SECRET || "";

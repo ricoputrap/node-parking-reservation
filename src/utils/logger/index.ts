@@ -1,5 +1,4 @@
-import fs from 'fs/promises';
-
+import { promises as fs } from 'fs';
 /**
  * Logs a message to a file. If the file doesn't exist, it will be created.
  * 

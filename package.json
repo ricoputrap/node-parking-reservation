@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node --env-file=.env dist/index.js"
+    "start": "node --env-file=.env --experimental-sqlite dist/index.js",
+    "dbinit": "node --experimental-sqlite --env-file=.env scripts/db-setup.js"
   },
   "author": "Rico Putra",
   "license": "MIT",
