@@ -4,6 +4,7 @@ import { sendResponse } from '../../../utils/http';
 import { verifyAccessToken, verifyRefreshToken } from '../../../utils/token';
 import { IPayload } from '../../../utils/token/index.types';
 import log from '../../../utils/logger';
+import { REFRESH_TOKEN_PATH } from '../../../../config/constants';
 
 const LOG_PREFIX = "[AuthController] handleLogout";
 
@@ -19,7 +20,6 @@ const LOG_PREFIX = "[AuthController] handleLogout";
  */
 const blacklistedAccessTokens: Record<string, number> = {};
 const blacklistedRefreshTokens: Record<string, number> = {};
-
 
 const logout = async (req: IncomingMessage, res: ServerResponse) => {
   const authHeader = req.headers['authorization'];
@@ -174,7 +174,7 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
   log(`${LOG_PREFIX}: Blacklisted refresh token. Token: ${refreshToken}`);
 
   // delete the refresh token from cookie
-  res.setHeader('Set-Cookie', 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT');
+  res.setHeader('Set-Cookie', `refreshToken=; path=${REFRESH_TOKEN_PATH}; expires=Thu, 01 Jan 1970 00:00:00 GMT`);
 
   sendResponse({
     res,

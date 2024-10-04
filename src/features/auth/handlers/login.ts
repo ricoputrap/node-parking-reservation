@@ -5,7 +5,7 @@ import { sendResponse } from '../../../utils/http';
 import { EnumHttpStatus } from '../../../../config/enums';
 import { encrypt } from '../../../utils/passwordHashing';
 import { generateAccessToken, generateRefreshToken, setHttpOnlyCookie } from '../../../utils/token';
-import { ONE_DAY_IN_SECONDS } from '../../../../config/constants';
+import { ONE_DAY_IN_SECONDS, REFRESH_TOKEN_PATH } from '../../../../config/constants';
 import log from '../../../utils/logger';
 import IUserModel from '../../../models/user-model/index.types';
 
@@ -81,7 +81,10 @@ const login = async (res: ServerResponse, body: string, userModel: IUserModel) =
 
   // Set the refresh token in an HTTP-only cookie
   const maxAge = ONE_DAY_IN_SECONDS * 30; // 30 days
-  setHttpOnlyCookie(res, 'refreshToken', refreshToken, { maxAge });
+  setHttpOnlyCookie(res, 'refreshToken', refreshToken, {
+    maxAge,
+    path: REFRESH_TOKEN_PATH
+  });
 
   // send response
   sendResponse({

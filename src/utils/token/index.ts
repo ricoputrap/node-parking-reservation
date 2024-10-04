@@ -60,7 +60,7 @@ export const setHttpOnlyCookie = (
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/",
+    path: options.path || "/",
     maxAge: options.maxAge || undefined // maxAge is in seconds
   };
 
