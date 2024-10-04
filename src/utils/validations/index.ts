@@ -28,12 +28,12 @@ export const parseData = (
     return data;
   }
   catch (error) {
-    res.statusCode = 400;
-    res.write(JSON.stringify({
+    sendResponse({
+      res,
+      status: EnumHttpStatus.BAD_REQUEST,
       success: false,
       message: 'Invalid JSON format'
-    }));
-    res.end();
+    })
 
     // log the error
     log(`${logPrefix}: Invalid JSON format`);

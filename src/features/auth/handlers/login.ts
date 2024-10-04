@@ -54,7 +54,7 @@ const login = async (res: ServerResponse, body: string, userModel: IUserModel) =
       success: false,
       message: 'User not found'
     })
-    log(`[AuthController] hanldeLogin: User not found with email "${validatedUser.email}"`);
+    log(`${LOG_PREFIX}: User not found with email "${validatedUser.email}"`);
 
     return;
   }
@@ -70,7 +70,7 @@ const login = async (res: ServerResponse, body: string, userModel: IUserModel) =
       success: false,
       message: 'Incorrect password'
     })
-    log(`[AuthController] hanldeLogin: Incorrect password for email "${validatedUser.email}"`);
+    log(`${LOG_PREFIX}: Incorrect password for email "${validatedUser.email}"`);
 
     return;
   }
@@ -96,7 +96,7 @@ const login = async (res: ServerResponse, body: string, userModel: IUserModel) =
   });
 
   // log the success
-  log(`[AuthController] hanldeLogin: Login successful for email "${validatedUser.email}"`);
+  log(`${LOG_PREFIX}: Login successful for email "${validatedUser.email}"`);
 }
 
 export default login;

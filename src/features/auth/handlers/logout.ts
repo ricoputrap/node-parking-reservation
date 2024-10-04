@@ -16,7 +16,7 @@ const LOG_PREFIX = "[AuthController] handleLogout";
  * Utilize cronjob to clear the blacklisted tokens
  * when they are expired.
  * 
- * TODO: Utilize Redis
+ * TODO: Utilize Redis (in-memory database)
  */
 const blacklistedAccessTokens: Record<string, number> = {};
 const blacklistedRefreshTokens: Record<string, number> = {};
