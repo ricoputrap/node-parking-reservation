@@ -28,6 +28,7 @@ const authRoute = (req: IncomingMessage, res: ServerResponse) => {
         break;
 
       case EnumPaths.REFRESH:
+        authController.handleRefresh(req, res);
         break;
 
       default:

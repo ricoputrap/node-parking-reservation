@@ -2,13 +2,12 @@ import { IncomingMessage, ServerResponse } from 'http';
 import UserModel from "../../models/user-model";
 import IUserModel from "../../models/user-model/index.types";
 import log from '../../utils/logger';
-import { verifyAccessToken, verifyRefreshToken } from '../../utils/token';
 import { EnumHttpStatus } from '../../../config/enums';
-import { IPayload } from '../../utils/token/index.types';
 import { sendResponse } from '../../utils/http';
 import login from './handlers/login';
 import register from './handlers/register';
 import logout from './handlers/logout';
+import refresh from './handlers/refresh';
 
 class AuthController {
   private userModel: IUserModel;
@@ -94,7 +93,21 @@ class AuthController {
     }
   }
 
-  async handleRefresh(req: IncomingMessage, res: ServerResponse) {}
+  async handleRefresh(req: IncomingMessage, res: ServerResponse) {
+    try {
+      await refresh(req, res, this.userModel);
+    }
+    catch (error: any) {
+      log(`[AuthController] hanldeRefresh: ${error.message}`);
+
+      sendResponse({
+        res,
+        status: EnumHttpStatus.INTERNAL_SERVER_ERROR,
+        success: false,
+        message: error.message || 'An unexpected error occurred'
+      });
+    }
+  }
 }
 
 export default AuthController;

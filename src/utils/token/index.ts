@@ -18,6 +18,7 @@ export const generateAccessToken = (user: Omit<IUser, "password">) => {
     iat: now,
     exp,
     user_id: user.id,
+    email: user.email,
     role: user.role,
   };
 
@@ -35,6 +36,7 @@ export const generateRefreshToken = (user: Omit<IUser, "password">) => {
     iat: now,
     exp,
     user_id: user.id,
+    email: user.email,
     role: user.role,
   };
 

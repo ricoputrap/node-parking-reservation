@@ -5,21 +5,9 @@ import { verifyAccessToken, verifyRefreshToken } from '../../../utils/token';
 import { IPayload } from '../../../utils/token/index.types';
 import log from '../../../utils/logger';
 import { REFRESH_TOKEN_PATH } from '../../../../config/constants';
+import { blacklistedAccessTokens, blacklistedRefreshTokens } from '../../../stores/tokens';
 
 const LOG_PREFIX = "[AuthController] handleLogout";
-
-/**
- * The key will be the token string.
- * The value will be in seconds, representing the unix timestamp
- * when the token will expire.
- * 
- * Utilize cronjob to clear the blacklisted tokens
- * when they are expired.
- * 
- * TODO: Utilize Redis (in-memory database)
- */
-const blacklistedAccessTokens: Record<string, number> = {};
-const blacklistedRefreshTokens: Record<string, number> = {};
 
 const logout = async (req: IncomingMessage, res: ServerResponse) => {
   const authHeader = req.headers['authorization'];
