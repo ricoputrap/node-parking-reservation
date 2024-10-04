@@ -93,6 +93,9 @@ const register = async (res: ServerResponse, body: string, userModel: IUserModel
     message: result.message || "Failed to create user",
     errors: result.errors
   })
+
+  // log the error
+  log(`${LOG_PREFIX}: Failed to create user with email "${validatedUser.email}"`);
 }
 
 export default register;

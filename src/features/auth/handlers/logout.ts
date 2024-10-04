@@ -3,6 +3,7 @@ import { EnumHttpStatus } from '../../../../config/enums';
 import { sendResponse } from '../../../utils/http';
 import { verifyAccessToken, verifyRefreshToken } from '../../../utils/token';
 import { IPayload } from '../../../utils/token/index.types';
+import log from '../../../utils/logger';
 
 const LOG_PREFIX = "[AuthController] handleLogout";
 
@@ -31,6 +32,10 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Authorization header not found'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Authorization header not found`);
+
     return;
   }
 
@@ -45,6 +50,10 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Authorization token not found'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Authorization token not found`);
+
     return;
   }
 
@@ -56,6 +65,10 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Access token is blacklisted already'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Access token is blacklisted already. Token: ${token}`);
+  
     return;
   }
 
@@ -70,11 +83,18 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Invalid access token'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Invalid access token. Token: ${token}`);
+
     return;
   }
 
   // blacklist the access token
   blacklistedAccessTokens[token] = payload.exp;
+
+  // log the blacklisted access token
+  log(`${LOG_PREFIX}: Blacklisted access token. Token: ${token}`);
 
   // read the refresh token from cookie httpOnly
   const cookies = req.headers.cookie;
@@ -86,6 +106,10 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Authorization cookie is missing'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Authorization cookie is missing`);
+
     return;
   }
 
@@ -100,6 +124,10 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Authorization cookie is missing'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Authorization cookie is missing`);
+
     return;
   }
 
@@ -115,6 +143,9 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Refresh token is blacklisted already'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Refresh token is blacklisted already. Token: ${refreshToken}`);
     return;
   }
 
@@ -129,11 +160,18 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
       success: false,
       message: 'Invalid refresh token'
     });
+
+    // log the error
+    log(`${LOG_PREFIX}: Invalid refresh token. Token: ${refreshToken}`);
+
     return;
   }
 
   // blacklist the refresh token
   blacklistedRefreshTokens[refreshToken] = refreshPayload.exp;
+
+  // log the blacklisted refresh token
+  log(`${LOG_PREFIX}: Blacklisted refresh token. Token: ${refreshToken}`);
 
   // delete the refresh token from cookie
   res.setHeader('Set-Cookie', 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT');
@@ -144,6 +182,9 @@ const logout = async (req: IncomingMessage, res: ServerResponse) => {
     success: true,
     message: 'Logout successful'
   });
+
+  // log the success
+  log(`${LOG_PREFIX}: Logout successful for user id: ${payload.user_id}`);
 }
 
 export default logout;
