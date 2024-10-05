@@ -7,6 +7,42 @@ import { IGarageModel } from "./index.types";
 
 class GarageModel implements IGarageModel {
 
+  async getAllGarages(queryParams: IGarageQueryParams) {
+
+    const args: SupportedValueType[] = [];
+    let query = `
+      SELECT GARAGE.*, GARAGE_ADMIN.user_id AS adminID FROM GARAGE
+      INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
+      WHERE
+        GARAGE.active = 1
+    `;
+
+    if (queryParams.name) {
+      query += ` AND GARAGE.name LIKE ?`;
+      args.push(queryParams.name);
+    }
+    if (queryParams.location) {
+      query += ` AND GARAGE.location LIKE ?`;
+      args.push(queryParams.location);
+    }
+    if (queryParams.startPrice) {
+      query += ` AND GARAGE.price_per_hour >= ?`;
+      args.push(queryParams.startPrice);
+    }
+    if (queryParams.endPrice) {
+      query += ` AND GARAGE.price_per_hour <= ?`;
+      args.push(queryParams.endPrice);
+    }
+
+    // create the prepared statement for the query
+    const queryGetGarages = db.prepare(query);
+
+    // execute the query
+    const result = queryGetGarages.all(...args);
+
+    return result as IGarage[];
+  }
+
   async getMyGarages(adminID: number, queryParams: IGarageQueryParams) {
 
     const args: SupportedValueType[] = [adminID];

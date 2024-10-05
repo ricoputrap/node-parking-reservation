@@ -43,8 +43,7 @@ class GarageController {
 
       // get all garages
       if (req.user.role == EnumUserRole.USER) {
-        // TODO
-        res.end();
+        await handlers.getAll(res, this.garageModel, queryParams);
         return;
       }
 

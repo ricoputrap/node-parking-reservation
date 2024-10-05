@@ -8,6 +8,7 @@ export type INewGarage = Omit<IGarage, "id" | "active">;
 export interface ICreateGarageResult extends IOperationResult<Omit<IGarage, "active">> {};
 
 export interface IGarageModel {
+  getAllGarages: (queryParams: IGarageQueryParams) => Promise<IGarage[]>
   getMyGarages: (adminID: number, queryParams: IGarageQueryParams) => Promise<IGarage[]>;
   createGarage: (adminID: number, data: GarageRegistration) => Promise<ICreateGarageResult>;
 }

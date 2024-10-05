@@ -17,18 +17,22 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
   console.log(loggedMessage);
   log(loggedMessage);
 
-  if (req.url?.startsWith("/api/auth"))
-    authRoute(req, res);
-  else if (req.url?.startsWith("/api/spots"))
-    spotsRoute(req, res);
-  else if (req.url?.startsWith("/api/reservations"))
-    reservationsRoute(req, res);
-  else if (req.url?.startsWith("/api/payments"))
-    paymentsRoute(req, res);
-  else if (req.url?.startsWith("/api/garages"))
-    garageRoute(req, res)
-  else
+  const routes = [
+    { url: "/api/auth", handler: authRoute },
+    { url: "/api/spots", handler: spotsRoute },
+    { url: "/api/reservations", handler: reservationsRoute },
+    { url: "/api/payments", handler: paymentsRoute },
+    { url: "/api/garages", handler: garageRoute },
+  ];
+
+  const matchedRoute = routes.find((route) => req.url?.startsWith(route.url));
+
+  if (matchedRoute) {
+    matchedRoute.handler(req, res);
+  }
+  else {
     notFoundHandler(req, res);
+  }
 });
 
 server.listen(PORT, () => {

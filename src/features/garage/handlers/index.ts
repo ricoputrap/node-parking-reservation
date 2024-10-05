@@ -2,6 +2,7 @@ import { ServerResponse } from 'http';
 import create from "./create";
 import getByAdmin from "./getByAdmin";
 import { IGarageModel } from '../../../models/garage-model/index.types';
+import getAll from './getAll';
 
 export interface IGarageQueryParams {
   name?: string;
@@ -11,13 +12,15 @@ export interface IGarageQueryParams {
 }
 
 interface IGarageHandlers {
-  create: (res: ServerResponse, userID: number, body: string, garageModel: IGarageModel) => Promise<void>;
+  getAll: (res: ServerResponse, garageModel: IGarageModel, queryParams: IGarageQueryParams) => Promise<void>;
   getByAdmin: (res: ServerResponse, userID: number, garageModel: IGarageModel, queryParams: IGarageQueryParams) => Promise<void>;
+  create: (res: ServerResponse, userID: number, body: string, garageModel: IGarageModel) => Promise<void>;
 }
 
 const handlers: IGarageHandlers = {
-  create,
-  getByAdmin
+  getAll,
+  getByAdmin,
+  create
 };
 
 export default handlers;
