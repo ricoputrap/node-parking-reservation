@@ -13,9 +13,9 @@ class GarageController {
     this.garageModel = new GarageModel();
   }
 
-  async getGarages(req: IncomingMessage, res: ServerResponse) {
+  async getGarages(res: ServerResponse, userID: number) {
     try {
-      await handlers.getByAdmin(req, res, this.garageModel);
+      await handlers.getByAdmin(res, userID, this.garageModel);
     }
     catch (error: any) {
       log(`${EnumLogLevel.ERROR} [GarageController] getGarage: ${error.message}`);
@@ -29,7 +29,7 @@ class GarageController {
     }
   }
 
-  createGarage(req: IncomingMessage, res: ServerResponse) {
+  createGarage(req: IncomingMessage, res: ServerResponse, userID: number) {
     let body: string = '';
 
     req.on('data', (chunk) => {
@@ -38,7 +38,7 @@ class GarageController {
 
     req.on('end', async () => {
       try {
-        await handlers.create(req, res, body, this.garageModel);
+        await handlers.create(res, userID, body, this.garageModel);
       }
       catch (error: any) {
         log(`${EnumLogLevel.ERROR} [GarageController] createGarage: ${error.message}`);
