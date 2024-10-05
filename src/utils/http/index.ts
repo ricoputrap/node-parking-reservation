@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { EnumHttpStatus } from '../../../config/enums';
+import log from '../logger';
 
 interface Params {
   res: ServerResponse,
@@ -48,5 +49,30 @@ export const methodNotAllowedHandler = (req: IncomingMessage, res: ServerRespons
     status: EnumHttpStatus.METHOD_NOT_ALLOWED,
     success: false,
     message: 'Method not allowed'
+  });
+}
+
+export const errorHandler = (error: any, res: ServerResponse, logPrefix: string) => {
+  let message: string = error.message || 'An unexpected error occurred';
+  let status: EnumHttpStatus = EnumHttpStatus.INTERNAL_SERVER_ERROR;
+
+  if (error.name === "UnauthorizedError") {
+    status = EnumHttpStatus.UNAUTHORIZED;
+  }
+  else if (error.name === "ForbiddenError") {
+    status = EnumHttpStatus.FORBIDDEN;
+  }
+  else if (error.name === "TokenExpiredError") {
+    status = EnumHttpStatus.UNAUTHORIZED;
+    message = "Access token expired";
+  }
+
+  log(`${logPrefix}: ${error.message}`);
+
+  sendResponse({
+    res,
+    status,
+    success: false,
+    message
   });
 }

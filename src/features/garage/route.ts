@@ -10,9 +10,7 @@ const garageRoute = (req: IncomingMessage, res: ServerResponse) => {
   switch (req.method) {
     // Get All Garages (can be filtered by name, location, or by the admin)
     case EnumHttpMethod.GET:
-      authMiddleware([EnumUserRole.GARAGE_ADMIN, EnumUserRole.USER])(req, res, (user) => {
-        garageController.getGarages(res, user.user_id);
-      });
+        garageController.getGarages(req, res);
       break;
 
     // Open New Garage - by Garage Admin
