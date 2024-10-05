@@ -6,12 +6,9 @@ import { PORT } from './config/constants';
 import spotsRoute from './src/features/spots/spots.route';
 import reservationsRoute from './src/features/reservations/reservations.route';
 import paymentsRoute from './src/features/payments/payments.route';
-
-const notFoundHandler = (req: IncomingMessage, res: ServerResponse) => {
-  res.statusCode = 404;
-  res.write(JSON.stringify({ error: 'Route not found' }));
-  res.end();
-}
+import { garageAdminAuthMiddleware } from './src/middlewares/auth';
+import { notFoundHandler } from './src/utils/http';
+import garageRoute from './src/features/garage/route';
 
 const server = createServer((req: IncomingMessage, res: ServerResponse) => {
   res.setHeader('Content-Type', 'application/json');
@@ -29,6 +26,8 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     reservationsRoute(req, res);
   else if (req.url?.startsWith("/api/payments"))
     paymentsRoute(req, res);
+  else if (req.url?.startsWith("/api/garages"))
+    garageAdminAuthMiddleware(req, res, () => garageRoute(req, res));
   else
     notFoundHandler(req, res);
 });

@@ -1,4 +1,4 @@
-import { ServerResponse } from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 import { EnumHttpStatus } from '../../../config/enums';
 
 interface Params {
@@ -31,4 +31,22 @@ export const sendResponse = ({ res, status, success, message, data, errors }: Pa
   }));
 
   res.end();
+}
+
+export const notFoundHandler = (req: IncomingMessage, res: ServerResponse) => {
+  sendResponse({
+    res,
+    status: EnumHttpStatus.NOT_FOUND,
+    success: false,
+    message: 'Route not found'
+  });
+}
+
+export const methodNotAllowedHandler = (req: IncomingMessage, res: ServerResponse) => {
+  sendResponse({
+    res,
+    status: EnumHttpStatus.METHOD_NOT_ALLOWED,
+    success: false,
+    message: 'Method not allowed'
+  });
 }

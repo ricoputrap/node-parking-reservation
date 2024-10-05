@@ -62,7 +62,7 @@ const register = async (res: ServerResponse, body: string, userModel: IUserModel
     name: validatedUser.name,
     email: validatedUser.email,
     password: hashedPassword,
-    role: EnumUserRole.USER
+    role: validatedUser.role
   });
 
   // user registration is successful

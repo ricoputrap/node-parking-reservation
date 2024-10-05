@@ -6,7 +6,8 @@ export enum EnumPaths {
 }
 
 export enum EnumAdminPaths {
-  GARAGES = 'garage',
+  GARAGES = 'garages',
+  GARAGE_ADMINS = 'garage_admins',
 }
 
 export enum EnumUserRole {
@@ -25,4 +26,19 @@ export enum EnumHttpStatus {
   METHOD_NOT_ALLOWED = 405,
   CONFLICT = 409,
   INTERNAL_SERVER_ERROR = 500,
+}
+
+export enum EnumHttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+}
+
+export enum EnumLogLevel {
+  DEBUG = 'DEBUG',
+  INFO = 'INFO',
+  WARN = 'WARN',
+  ERROR = 'ERROR',
 }

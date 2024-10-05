@@ -1,12 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { EnumPaths } from '../../../config/enums';
 import AuthController from './auth.controller';
-
-const notFoundHandler = (req: IncomingMessage, res: ServerResponse) => {
-  res.statusCode = 404;
-  res.write(JSON.stringify({ error: 'Route not found' }));
-  res.end();
-}
+import { notFoundHandler } from '../../utils/http';
 
 const authController = new AuthController();
 
@@ -17,7 +12,7 @@ const authRoute = (req: IncomingMessage, res: ServerResponse) => {
     switch (path) {
       case EnumPaths.REGISTER:
         authController.handleRegister(req, res);
-        return;
+        break;
 
       case EnumPaths.LOGIN:
         authController.handleLogin(req, res);

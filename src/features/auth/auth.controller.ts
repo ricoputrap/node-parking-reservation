@@ -48,7 +48,7 @@ class AuthController {
         });
 
         // log the error
-        log(`[AuthController] hanldeRegister: ${error.message}`);
+        log(`[AuthController] handleRegister: ${error.message}`);
       }
     });
   }
@@ -65,7 +65,7 @@ class AuthController {
         await login(res, body, this.userModel);
       }
       catch (error: any) {
-        log(`[AuthController] hanldeLogin: ${error.message}`);
+        log(`[AuthController] handleLogin: ${error.message}`);
 
         sendResponse({
           res,
@@ -82,7 +82,7 @@ class AuthController {
       await logout(req, res);
     }
     catch (error: any) {
-      log(`[AuthController] hanldeLogout: ${error.message}`);
+      log(`[AuthController] handleLogout: ${error.message}`);
 
       sendResponse({
         res,
@@ -98,7 +98,7 @@ class AuthController {
       await refresh(req, res, this.userModel);
     }
     catch (error: any) {
-      log(`[AuthController] hanldeRefresh: ${error.message}`);
+      log(`[AuthController] handleRefresh: ${error.message}`);
 
       sendResponse({
         res,
