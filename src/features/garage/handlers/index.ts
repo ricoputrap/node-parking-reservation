@@ -3,6 +3,7 @@ import create from "./create";
 import getByAdmin from "./getByAdmin";
 import { IGarageModel } from '../../../models/garage-model/index.types';
 import getAll from './getAll';
+import update from './update';
 
 export interface IGarageQueryParams {
   name?: string;
@@ -15,12 +16,20 @@ interface IGarageHandlers {
   getAll: (res: ServerResponse, garageModel: IGarageModel, queryParams: IGarageQueryParams) => Promise<void>;
   getByAdmin: (res: ServerResponse, userID: number, garageModel: IGarageModel, queryParams: IGarageQueryParams) => Promise<void>;
   create: (res: ServerResponse, userID: number, body: string, garageModel: IGarageModel) => Promise<void>;
+  update: (
+    res: ServerResponse,
+    userID: number,
+    garageID: number,
+    body: string,
+    garageModel: IGarageModel
+  ) => Promise<void>;
 }
 
 const handlers: IGarageHandlers = {
   getAll,
   getByAdmin,
-  create
+  create,
+  update
 };
 
 export default handlers;

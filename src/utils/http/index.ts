@@ -56,11 +56,20 @@ export const errorHandler = (error: any, res: ServerResponse, logPrefix: string)
   let message: string = error.message || 'An unexpected error occurred';
   let status: EnumHttpStatus = EnumHttpStatus.INTERNAL_SERVER_ERROR;
 
-  if (error.name === "UnauthorizedError") {
+  if (error.name === "BadRequestError") {
+    status = EnumHttpStatus.BAD_REQUEST;
+  }
+  // 401
+  else if (error.name === "UnauthorizedError") {
     status = EnumHttpStatus.UNAUTHORIZED;
   }
+  // 403
   else if (error.name === "ForbiddenError") {
     status = EnumHttpStatus.FORBIDDEN;
+  }
+  // 404
+  else if (error.name === "NotFoundError") {
+    status = EnumHttpStatus.NOT_FOUND;
   }
   else if (error.name === "TokenExpiredError") {
     status = EnumHttpStatus.UNAUTHORIZED;

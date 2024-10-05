@@ -1,6 +1,6 @@
 import { ServerResponse } from 'http';
 import { handleSchemaValidationError, parseData } from '../../../utils/validations';
-import { GarageRegistration, garageRegistrationSchema } from '../validation';
+import { GarageRegistration, garageSchema } from '../validation';
 import { EnumHttpStatus, EnumLogLevel } from '../../../../config/enums';
 import { sendResponse } from '../../../utils/http';
 import { ICreateGarageResult, IGarageModel } from '../../../models/garage-model/index.types';
@@ -28,7 +28,7 @@ const create = async (res: ServerResponse, userID: number, body: string, garageM
   if (!newGarageData) return;
 
   // Validate the incoming data using Zod
-  const parsedResult = garageRegistrationSchema.safeParse(newGarageData);
+  const parsedResult = garageSchema.safeParse(newGarageData);
 
   if (!parsedResult.success) {
     handleSchemaValidationError(res, parsedResult.error.issues, LOG_PREFIX);

@@ -80,6 +80,23 @@ class GarageModel implements IGarageModel {
     return result as IGarage[];
   }
 
+  async getGarageAdmin(garageID: number) {
+
+    const QUERY_GET_GARAGE_ADMIN = `
+      SELECT user_id FROM GARAGE_ADMIN
+      WHERE garage_id = ?
+    `;
+
+    // create the prepared statement for the query
+    const queryGetGarageAdmin = db.prepare(QUERY_GET_GARAGE_ADMIN);
+
+    // execute the query
+    const result = queryGetGarageAdmin.get(garageID) as { user_id: number };
+
+    if (!result) return -1;
+    return result.user_id
+  }
+
   async createGarage(adminID: number, data: GarageRegistration) {
 
     const QUERY_INSERT_GARAGE = `
@@ -112,6 +129,39 @@ class GarageModel implements IGarageModel {
         location,
         pricePerHour,
         adminID
+      }
+    }
+  }
+
+  async updateGarage(adminID: number, garageID: number, data: GarageRegistration) {
+
+    const QUERY_UPDATE_GARAGE = `
+      UPDATE GARAGE
+      SET name = ?, location = ?, price_per_hour = ?
+      WHERE id = ?
+    `;
+
+    const { name, location, pricePerHour } = data;
+
+    const queryUpdateGarage = db.prepare(QUERY_UPDATE_GARAGE);
+
+    // execute the query
+    const updateGarageResult = queryUpdateGarage.run(name, location, pricePerHour, garageID);
+
+    if (!updateGarageResult.changes) {
+      return {
+        success: false,
+        message: "Garage not found"
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        id: garageID,
+        name,
+        location,
+        pricePerHour
       }
     }
   }

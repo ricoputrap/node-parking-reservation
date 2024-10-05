@@ -10,7 +10,7 @@ const garageRoute = (req: IncomingMessage, res: ServerResponse) => {
   switch (req.method) {
     // Get All Garages (can be filtered by name, location, or by the admin)
     case EnumHttpMethod.GET:
-        garageController.getGarages(req, res);
+      garageController.getGarages(req, res);
       break;
 
     // Open New Garage - by Garage Admin
@@ -22,8 +22,7 @@ const garageRoute = (req: IncomingMessage, res: ServerResponse) => {
 
     // Update Garage - by Garage Admin
     case EnumHttpMethod.PUT:
-      // TODO
-      res.end();
+      garageController.updateGarage(req, res);
       break;
 
     // Delete Garage - by Garage Admin

@@ -8,6 +8,7 @@ import { errorHandler, sendResponse } from '../../utils/http';
 import handlers, { IGarageQueryParams } from './handlers';
 import authorize from '../../decorators/authorize';
 import ForbiddenError from '../../errors/ForbiddenError';
+import BadRequestError from '../../errors/BadRequestError';
 
 class GarageController {
   private garageModel: IGarageModel;
@@ -76,6 +77,41 @@ class GarageController {
           success: false,
           message: error.message || 'An unexpected error occurred'
         });
+      }
+    });
+  }
+
+  @authorize([EnumUserRole.GARAGE_ADMIN])
+  updateGarage(req: IncomingMessage, res: ServerResponse) {
+    let body: string = '';
+
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+
+    req.on('end', async () => {
+      try {
+        // Check if the user is allowed to access this resource
+        if (!req.user) {
+          const message = `The user is not allowed to access this resource.`;
+          throw new ForbiddenError(message);
+        }
+        
+        // Get the garage ID from the URL: /api/garages/:garageID
+        const pathname: string = req.url || '';
+        const pathSegments = pathname.split('/'); // ['', 'api', 'garages', <garageID>]
+
+        // garage ID is not provided
+        if (pathSegments.length < 4) {
+          throw new BadRequestError('Garage ID is not provided');
+        }
+
+        const garageID = Number(pathSegments[3]);
+        await handlers.update(res, req.user.user_id, garageID, body, this.garageModel);
+      }
+      catch (error: any) {
+        const logPrefix = `${EnumLogLevel.ERROR} [GarageController] updateGarage`;
+        errorHandler(error, res, logPrefix);
       }
     });
   }
