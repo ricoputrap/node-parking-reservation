@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { EnumHttpStatus } from '../../../config/enums';
+import { EnumErrorName, EnumHttpStatus } from '../../../config/enums';
 import log from '../logger';
 
 interface Params {
@@ -56,24 +56,30 @@ export const errorHandler = (error: any, res: ServerResponse, logPrefix: string)
   let message: string = error.message || 'An unexpected error occurred';
   let status: EnumHttpStatus = EnumHttpStatus.INTERNAL_SERVER_ERROR;
 
-  if (error.name === "BadRequestError") {
-    status = EnumHttpStatus.BAD_REQUEST;
-  }
-  // 401
-  else if (error.name === "UnauthorizedError") {
-    status = EnumHttpStatus.UNAUTHORIZED;
-  }
-  // 403
-  else if (error.name === "ForbiddenError") {
-    status = EnumHttpStatus.FORBIDDEN;
-  }
-  // 404
-  else if (error.name === "NotFoundError") {
-    status = EnumHttpStatus.NOT_FOUND;
-  }
-  else if (error.name === "TokenExpiredError") {
-    status = EnumHttpStatus.UNAUTHORIZED;
-    message = "Access token expired";
+  switch (error.name) {
+    case EnumErrorName.BAD_REQUEST_ERROR:
+      status = EnumHttpStatus.BAD_REQUEST;
+      break;
+
+    case EnumErrorName.UNAUTHORIZED_ERROR:
+      status = EnumHttpStatus.UNAUTHORIZED;
+      break;
+
+    case EnumErrorName.FORBIDDEN_ERROR:
+      status = EnumHttpStatus.FORBIDDEN;
+      break;
+
+    case EnumErrorName.NOT_FOUND_ERROR:
+      status = EnumHttpStatus.NOT_FOUND;
+      break;
+
+    case EnumErrorName.TOKEN_EXPIRED_ERROR:
+      status = EnumHttpStatus.UNAUTHORIZED;
+      message = 'Access token expired';
+      break;
+
+    default:
+      break;
   }
 
   log(`${logPrefix}: ${error.message}`);

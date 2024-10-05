@@ -42,3 +42,11 @@ export enum EnumLogLevel {
   WARN = 'WARN',
   ERROR = 'ERROR',
 }
+
+export enum EnumErrorName {
+  BAD_REQUEST_ERROR = 'BadRequestError',
+  UNAUTHORIZED_ERROR = 'UnauthorizedError',
+  FORBIDDEN_ERROR = 'ForbiddenError',
+  NOT_FOUND_ERROR = 'NotFoundError',
+  TOKEN_EXPIRED_ERROR = 'TokenExpiredError',
+}
