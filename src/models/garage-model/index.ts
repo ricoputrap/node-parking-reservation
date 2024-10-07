@@ -10,11 +10,14 @@ class GarageModel implements IGarageModel {
   async getAllGarages(queryParams: IGarageQueryParams) {
 
     const args: SupportedValueType[] = [];
+
+    const offset = (queryParams.page - 1) * queryParams.size
+
     let query = `
       SELECT GARAGE.*, GARAGE_ADMIN.user_id AS adminID FROM GARAGE
       INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
-      WHERE
-        GARAGE.active = 1
+      WHERE GARAGE.active = 1
+      LIMIT ${queryParams.size} OFFSET ${offset}
     `;
 
     if (queryParams.name) {
@@ -46,12 +49,16 @@ class GarageModel implements IGarageModel {
   async getMyGarages(adminID: number, queryParams: IGarageQueryParams) {
 
     const args: SupportedValueType[] = [adminID];
+
+    const offset = (queryParams.page - 1) * queryParams.size;
+
     let query = `
       SELECT GARAGE.*, GARAGE_ADMIN.user_id AS adminID FROM GARAGE
       INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
       WHERE
         GARAGE_ADMIN.user_id = ?
         AND GARAGE.active = 1
+      LIMIT ${queryParams.size} OFFSET ${offset}
     `;
 
     if (queryParams.name) {

@@ -31,16 +31,18 @@ class GarageController {
       const location: string = url.searchParams.get('location') || "";
       const startPrice: number = Number(url.searchParams.get('startPrice')) || 0;
       const endPrice: number = Number(url.searchParams.get('endPrice')) || 0;
+      const page: number = Number(url.searchParams.get('page')) || 1;
+      const size: number = Number(url.searchParams.get('size')) || 10;
 
       // prepare query params
       const queryParams: IGarageQueryParams = {
         name,
         location,
         startPrice,
-        endPrice
+        endPrice,
+        page,
+        size
       };
-
-      // TODO: add pagination
 
       // get all garages
       if (req.user.role == EnumUserRole.USER) {
