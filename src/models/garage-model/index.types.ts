@@ -14,5 +14,5 @@ export interface IGarageModel {
   getGarageAdmin: (garageID: number) => Promise<number>;
   createGarage: (adminID: number, data: GarageRegistration) => Promise<ICreateGarageResult>;
   updateGarage: (adminID: number, garageID: number, data: GarageRegistration) => Promise<IUpdateGarageResult>;
-  // deleteGarage: (garageID: number) => Promise<ICreateGarageResult>;
+  deleteGarage: (garageID: number) => Promise<IOperationResult<undefined>>;
 }

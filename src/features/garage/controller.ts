@@ -115,6 +115,33 @@ class GarageController {
       }
     });
   }
+
+  @authorize([EnumUserRole.GARAGE_ADMIN])
+  async deleteGarage(req: IncomingMessage, res: ServerResponse) {
+    try {
+      // Check if the user is allowed to access this resource
+      if (!req.user) {
+        const message = `The user is not allowed to access this resource.`;
+        throw new ForbiddenError(message);
+      }
+
+      // Get the garage ID from the URL: /api/garages/:garageID
+      const pathname: string = req.url || '';
+      const pathSegments = pathname.split('/'); // ['', 'api', 'garages', <garageID>]
+
+      // garage ID is not provided
+      if (pathSegments.length < 4) {
+        throw new BadRequestError('Garage ID is not provided');
+      }
+
+      const garageID = Number(pathSegments[3]);
+      await handlers.delete(res, req.user.user_id, garageID, this.garageModel);
+    }
+    catch (error: any) {
+      const logPrefix = `${EnumLogLevel.ERROR} [GarageController] deleteGarage`;
+      errorHandler(error, res, logPrefix);
+    }
+  }
 }
 
 export default GarageController;

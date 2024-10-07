@@ -4,6 +4,7 @@ import getByAdmin from "./getByAdmin";
 import { IGarageModel } from '../../../models/garage-model/index.types';
 import getAll from './getAll';
 import update from './update';
+import deleteGarage from './delete';
 
 export interface IGarageQueryParams {
   name?: string;
@@ -23,13 +24,15 @@ interface IGarageHandlers {
     body: string,
     garageModel: IGarageModel
   ) => Promise<void>;
+  delete: (res: ServerResponse, userID: number, garageID: number, garageModel: IGarageModel) => Promise<void>;
 }
 
 const handlers: IGarageHandlers = {
   getAll,
   getByAdmin,
   create,
-  update
+  update,
+  delete: deleteGarage
 };
 
 export default handlers;

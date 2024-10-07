@@ -27,8 +27,7 @@ const garageRoute = (req: IncomingMessage, res: ServerResponse) => {
 
     // Delete Garage - by Garage Admin
     case EnumHttpMethod.DELETE:
-      // TODO
-      res.end();
+      garageController.deleteGarage(req, res);
       break;
 
     default:

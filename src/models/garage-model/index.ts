@@ -83,8 +83,9 @@ class GarageModel implements IGarageModel {
   async getGarageAdmin(garageID: number) {
 
     const QUERY_GET_GARAGE_ADMIN = `
-      SELECT user_id FROM GARAGE_ADMIN
-      WHERE garage_id = ?
+      SELECT GARAGE_ADMIN.user_id FROM GARAGE_ADMIN
+      INNER JOIN GARAGE ON GARAGE_ADMIN.garage_id = GARAGE.id
+      WHERE GARAGE.id = ? AND GARAGE.active = 1
     `;
 
     // create the prepared statement for the query
@@ -163,6 +164,32 @@ class GarageModel implements IGarageModel {
         location,
         pricePerHour
       }
+    }
+  }
+
+  async deleteGarage(garageID: number) {
+
+    // soft delete the garage
+    const QUERY_DELETE_GARAGE = `
+      UPDATE GARAGE
+      SET active = 0
+      WHERE id = ?
+    `;
+
+    const queryDeleteGarage = db.prepare(QUERY_DELETE_GARAGE);
+
+    // execute the query
+    const deleteGarageResult = queryDeleteGarage.run(garageID);
+
+    if (!deleteGarageResult.changes) {
+      return {
+        success: false,
+        message: "Garage not found"
+      }
+    }
+
+    return {
+      success: true
     }
   }
 }
