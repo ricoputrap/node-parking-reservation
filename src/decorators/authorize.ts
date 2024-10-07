@@ -2,12 +2,11 @@ import { IncomingMessage, ServerResponse } from "http";
 import { EnumLogLevel, EnumUserRole } from "../../config/enums";
 import ForbiddenError from "../errors/ForbiddenError";
 import UnauthorizedError from "../errors/UnauthorizedError";
-import { IUserData } from "../middlewares/auth";
 import { blacklistedAccessTokens } from "../stores/tokens";
 import { errorHandler } from "../utils/http";
 import log from "../utils/logger";
 import { verifyAccessToken } from "../utils/token";
-import { IPayload } from "../utils/token/index.types";
+import { IPayload, IUserData } from "../utils/token/index.types";
 
 const LOG_PREFIX = "[DECORATORS] authorize";
 
@@ -52,7 +51,7 @@ function authorize(allowedRoles: EnumUserRole[]) {
 
         // forbidden to access
         if (!allowedRoles.includes(payload.role)) {
-          const message = `The user '${payload.email}' does not have the required role.`;
+          const message = `The user '${payload.email}' is not allowed to access this resource.`;
           throw new ForbiddenError(message);
         }
 

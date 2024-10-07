@@ -1,4 +1,4 @@
-import { IUserData } from '../middlewares/auth';
+import { IUserData } from "../utils/token/index.types";
 
 declare module 'http' {
     interface IncomingMessage {

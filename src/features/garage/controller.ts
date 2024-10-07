@@ -57,7 +57,8 @@ class GarageController {
     }
   }
 
-  createGarage(req: IncomingMessage, res: ServerResponse, userID: number) {
+  @authorize([EnumUserRole.GARAGE_ADMIN])
+  createGarage(req: IncomingMessage, res: ServerResponse) {
     let body: string = '';
 
     req.on('data', (chunk) => {
@@ -66,7 +67,12 @@ class GarageController {
 
     req.on('end', async () => {
       try {
-        await handlers.create(res, userID, body, this.garageModel);
+        if (!req.user) {
+          const message = `The user is not allowed to access this resource.`;
+          throw new ForbiddenError(message);
+        }
+
+        await handlers.create(res, req.user.user_id, body, this.garageModel);
       }
       catch (error: any) {
         log(`${EnumLogLevel.ERROR} [GarageController] createGarage: ${error.message}`);

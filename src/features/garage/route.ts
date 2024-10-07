@@ -1,8 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { EnumHttpMethod, EnumUserRole } from '../../../config/enums';
+import { EnumHttpMethod } from '../../../config/enums';
 import { methodNotAllowedHandler } from '../../utils/http';
 import GarageController from './controller';
-import authMiddleware from '../../middlewares/auth';
 
 const garageController = new GarageController();
 
@@ -15,9 +14,7 @@ const garageRoute = (req: IncomingMessage, res: ServerResponse) => {
 
     // Open New Garage - by Garage Admin
     case EnumHttpMethod.POST:
-      authMiddleware([EnumUserRole.GARAGE_ADMIN])(req, res, (user) => {
-        garageController.createGarage(req, res, user.user_id);
-      })
+      garageController.createGarage(req, res);
       break;
 
     // Update Garage - by Garage Admin

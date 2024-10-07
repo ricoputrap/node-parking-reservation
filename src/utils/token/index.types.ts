@@ -7,3 +7,5 @@ export interface IPayload {
   email: string;
   role: EnumUserRole;
 }
+
+export type IUserData = Omit<IPayload, "iat" | "exp">
