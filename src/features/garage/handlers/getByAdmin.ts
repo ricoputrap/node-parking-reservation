@@ -1,7 +1,7 @@
 import { ServerResponse } from 'http';
 import { sendResponse } from '../../../utils/http';
 import { EnumHttpStatus, EnumLogLevel } from '../../../../config/enums';
-import { IGarageModel } from '../../../models/garage-model/index.types';
+import { IGarageModel, IGetAllGaragesResult } from '../../../models/garage-model/index.types';
 import log from '../../../utils/logger';
 import { IGarageQueryParams } from '.';
 
@@ -13,15 +13,18 @@ const getByAdmin = async (
   garageModel: IGarageModel,
   queryParams: IGarageQueryParams
 ) => {
-  const garages = await garageModel.getMyGarages(userID, queryParams);
-  const messages = `Successfully fetched ${garages.length} garages of admin with ID ${userID}`;
+  const result: IGetAllGaragesResult = await garageModel.getMyGarages(userID, queryParams);
+  const messages = `Successfully fetched ${result.data?.length || 0} garages of admin with ID ${userID}`;
 
   sendResponse({
     res,
     status: EnumHttpStatus.OK,
     success: true,
     message: messages,
-    data: garages
+    data: result.data,
+    currentPage: queryParams.page,
+    totalPages: Math.ceil(result.totalCount / queryParams.size),
+    totalItems: result.totalCount
   });
 
   log(`${EnumLogLevel.INFO} ${LOG_PREFIX}: ${messages}`);

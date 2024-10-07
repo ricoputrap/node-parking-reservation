@@ -7,7 +7,10 @@ interface Params {
   status: EnumHttpStatus,
   success: boolean,
   message: string,
-  data?: any
+  data?: any,
+  currentPage?: number,
+  totalPages?: number,
+  totalItems?: number,
   errors?: Record<string, string>
 }
 
@@ -21,13 +24,26 @@ interface Params {
  * @param {string} params.message A message to be included in the response.
  * @param {any} [params.data] Optional data to be included in the response.
  */
-export const sendResponse = ({ res, status, success, message, data, errors }: Params) => {
+export const sendResponse = ({
+  res,
+  status,
+  success,
+  message,
+  data,
+  currentPage,
+  totalPages,
+  totalItems,
+  errors
+}: Params) => {
   res.statusCode = status;
 
   res.write(JSON.stringify({
     success,
     message,
     data,
+    currentPage,
+    totalPages,
+    totalItems,
     errors
   }));
 

@@ -13,37 +13,53 @@ class GarageModel implements IGarageModel {
 
     const offset = (queryParams.page - 1) * queryParams.size
 
-    let query = `
+    let queryGetAllGarages = `
       SELECT GARAGE.*, GARAGE_ADMIN.user_id AS adminID FROM GARAGE
       INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
       WHERE GARAGE.active = 1
       LIMIT ${queryParams.size} OFFSET ${offset}
     `;
 
+    let queryTotalCount = `
+      SELECT COUNT(*) AS totalCount FROM GARAGE
+      INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
+      WHERE GARAGE.active = 1
+    `;
+
     if (queryParams.name) {
-      query += ` AND GARAGE.name LIKE ?`;
+      queryGetAllGarages += ` AND GARAGE.name LIKE ?`;
+      queryTotalCount += ` AND GARAGE.name LIKE ?`;
       args.push(queryParams.name);
     }
     if (queryParams.location) {
-      query += ` AND GARAGE.location LIKE ?`;
+      queryGetAllGarages += ` AND GARAGE.location LIKE ?`;
+      queryTotalCount += ` AND GARAGE.location LIKE ?`;
       args.push(queryParams.location);
     }
     if (queryParams.startPrice) {
-      query += ` AND GARAGE.price_per_hour >= ?`;
+      queryGetAllGarages += ` AND GARAGE.price_per_hour >= ?`;
+      queryTotalCount += ` AND GARAGE.price_per_hour >= ?`;
       args.push(queryParams.startPrice);
     }
     if (queryParams.endPrice) {
-      query += ` AND GARAGE.price_per_hour <= ?`;
+      queryGetAllGarages += ` AND GARAGE.price_per_hour <= ?`;
+      queryTotalCount += ` AND GARAGE.price_per_hour <= ?`;
       args.push(queryParams.endPrice);
     }
 
     // create the prepared statement for the query
-    const queryGetGarages = db.prepare(query);
+    const preparedQueryGetAllGarages = db.prepare(queryGetAllGarages);
+    const preparedQueryTotalCount = db.prepare(queryTotalCount);
 
     // execute the query
-    const result = queryGetGarages.all(...args);
+    const allGaragesResult = preparedQueryGetAllGarages.all(...args);
+    const totalCountResult = preparedQueryTotalCount.get(...args) as { totalCount: number };
 
-    return result as IGarage[];
+    return {
+      success: true,
+      data: allGaragesResult as IGarage[],
+      totalCount: totalCountResult.totalCount
+    }
   }
 
   async getMyGarages(adminID: number, queryParams: IGarageQueryParams) {
@@ -52,7 +68,7 @@ class GarageModel implements IGarageModel {
 
     const offset = (queryParams.page - 1) * queryParams.size;
 
-    let query = `
+    let queryGetMyGarages = `
       SELECT GARAGE.*, GARAGE_ADMIN.user_id AS adminID FROM GARAGE
       INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
       WHERE
@@ -61,30 +77,48 @@ class GarageModel implements IGarageModel {
       LIMIT ${queryParams.size} OFFSET ${offset}
     `;
 
+    let queryTotalCount = `
+      SELECT COUNT(*) AS totalCount FROM GARAGE
+      INNER JOIN GARAGE_ADMIN ON GARAGE_ADMIN.garage_id = GARAGE.id
+      WHERE
+        GARAGE_ADMIN.user_id = ?
+        AND GARAGE.active = 1
+    `;
+
     if (queryParams.name) {
-      query += ` AND GARAGE.name LIKE ?`;
+      queryGetMyGarages += ` AND GARAGE.name LIKE ?`;
+      queryTotalCount += ` AND GARAGE.name LIKE ?`;
       args.push(queryParams.name);
     }
     if (queryParams.location) {
-      query += ` AND GARAGE.location LIKE ?`;
+      queryGetMyGarages += ` AND GARAGE.location LIKE ?`;
+      queryTotalCount += ` AND GARAGE.location LIKE ?`;
       args.push(queryParams.location);
     }
     if (queryParams.startPrice) {
-      query += ` AND GARAGE.price_per_hour >= ?`;
+      queryGetMyGarages += ` AND GARAGE.price_per_hour >= ?`;
+      queryTotalCount += ` AND GARAGE.price_per_hour >= ?`;
       args.push(queryParams.startPrice);
     }
     if (queryParams.endPrice) {
-      query += ` AND GARAGE.price_per_hour <= ?`;
+      queryGetMyGarages += ` AND GARAGE.price_per_hour <= ?`;
+      queryTotalCount += ` AND GARAGE.price_per_hour <= ?`;
       args.push(queryParams.endPrice);
     }
 
-    // create the prepared statement for the query
-    const queryGetGarages = db.prepare(query);
+    // create the prepared statement for the queries
+    const preparedQueryGetMyGarages = db.prepare(queryGetMyGarages);
+    const preparedQueryTotalCount = db.prepare(queryTotalCount);
 
     // execute the query
-    const result = queryGetGarages.all(...args);
+    const muGaragesResult = preparedQueryGetMyGarages.all(...args);
+    const totalCountResult = preparedQueryTotalCount.get(...args) as { totalCount: number };
 
-    return result as IGarage[];
+    return {
+      success: true,
+      data: muGaragesResult as IGarage[],
+      totalCount: totalCountResult.totalCount
+    }
   }
 
   async getGarageAdmin(garageID: number) {
