@@ -28,7 +28,6 @@ This project is the **backend** for Parking Management System built using **Node
       - [D. Parking Reservation (IN PROGRESS)](#d-parking-reservation-in-progress)
       - [E. Payment Processing (IN PROGRESS)](#e-payment-processing-in-progress)
     - [License](#license)
-    - [API Endpoints](#api-endpoints-1)
     - [Summary](#summary)
 
 ### Features
@@ -816,16 +815,6 @@ Contributions are welcome! If you would like to contribute to this project, plea
 ### License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-This README provides a comprehensive overview of the Parking Management System API, including its features, technologies, endpoints, and usage instructions. Feel free to customize it further to better suit your project's specifics and personal style!
-
----
-
-Certainly! Below is a detailed structure for the API endpoints for the sections you specified: Garage Management, Parking Spot Management, Parking Reservation, and Payment Processing. Each endpoint is outlined with the HTTP method, URL, request body, and response format, ensuring clarity and completeness for developers.
-
-### API Endpoints
 
 
 ### Summary
