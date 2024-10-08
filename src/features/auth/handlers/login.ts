@@ -1,6 +1,6 @@
 import { ServerResponse } from 'http';
 import { handleSchemaValidationError, parseData } from "../../../utils/validations";
-import { UserLogin, userLoginSchema } from '../auth.validation';
+import { UserLogin, userLoginSchema } from '../validation';
 import { sendResponse } from '../../../utils/http';
 import { EnumHttpStatus } from '../../../../config/enums';
 import { encrypt } from '../../../utils/passwordHashing';

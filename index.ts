@@ -1,9 +1,9 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
 
-import authRoute from './src/features/auth/auth.route';
+import authRoute from './src/features/auth/route';
 import log from './src/utils/logger';
 import { PORT } from './config/constants';
-import spotsRoute from './src/features/spots/spots.route';
+import spotsRoute from './src/features/spots/route';
 import reservationsRoute from './src/features/reservations/reservations.route';
 import paymentsRoute from './src/features/payments/payments.route';
 import { notFoundHandler } from './src/utils/http';
@@ -19,10 +19,10 @@ const server = createServer((req: IncomingMessage, res: ServerResponse) => {
 
   const routes = [
     { url: "/api/auth", handler: authRoute },
-    { url: "/api/spots", handler: spotsRoute },
     { url: "/api/reservations", handler: reservationsRoute },
     { url: "/api/payments", handler: paymentsRoute },
     { url: "/api/garages", handler: garageRoute },
+    { url: "/api/spots", handler: spotsRoute },
   ];
 
   const matchedRoute = routes.find((route) => req.url?.startsWith(route.url));

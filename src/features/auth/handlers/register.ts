@@ -1,7 +1,7 @@
 import { ServerResponse } from 'http';
 import IUserModel, { ICreateUserResult } from '../../../models/user-model/index.types';
 import { handleSchemaValidationError, parseData } from '../../../utils/validations';
-import { UserRegistration, userRegistrationSchema } from '../auth.validation';
+import { UserRegistration, userRegistrationSchema } from '../validation';
 import { sendResponse } from '../../../utils/http';
 import { EnumHttpStatus, EnumUserRole } from '../../../../config/enums';
 import log from '../../../utils/logger';

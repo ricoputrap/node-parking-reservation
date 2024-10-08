@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { EnumPaths } from '../../../config/enums';
-import AuthController from './auth.controller';
+import AuthController from './controller';
 import { notFoundHandler } from '../../utils/http';
 
 const authController = new AuthController();
