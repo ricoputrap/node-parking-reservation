@@ -455,77 +455,64 @@ Contributions are welcome! If you would like to contribute to this project, plea
 #### C. Parking Spot Management (IN PROGRESS)
 
 1. **Add a New Parking Spot**
-   - **POST** `/api/parking-spots`
-   - Headers:
-     - `Authorization`: `Bearer <admin_token>` // JWT token for admin authentication
-   - Request Body:
+   - **POST** `/api/spots`
+   - **Allowed role**: Garage Admin
+   - **Request Headers**: `Authorization: Bearer <accessToken>`
+   - **Request Body**:
     ```json
     {
-      "garageId": 1,
-      "location": "A1",
-      "status": "available"
+      "name": "A1",
+      "garageID": 1,
     }
     ```
-   - Response:
+   - **Response**:
     ```json
     {
       "success": true,
       "message": "Parking spot added successfully",
       "data": {
         "id": 1,
-        "garageId": 1,
-        "location": "A1",
-        "status": "available"
+        "garageID": 1,
+        "name": "A1",
+        "reserved": false,
       }
     }
     ```
 
 2. **Get All Parking Spots in a Garage**
-   - **GET** `/api/garages/{garageId}/parking-spots`
-   - Response:
+   - **GET** `/api/garages/{garageID}/spots`
+   - **Allowed role**: Garage Admin and Regular User
+   - **Request Headers**: `Authorization: Bearer <accessToken>`
+   - **Response**:
     ```json
     {
       "success": true,
+      "message": "Successfully fetched 2 parking spots in garage 1",
       "data": [
         {
           "id": 1,
-          "garageId": 1,
-          "location": "A1",
-          "status": "available"
+          "garageID": 1,
+          "name": "A1",
+          "reserved": false,
         },
         {
-          "id": 2,
-          "garageId": 1,
-          "location": "A2",
-          "status": "occupied"
-        }
+          "id": 1,
+          "garageID": 1,
+          "name": "A1",
+          "reserved": false,
+        },
       ]
     }
     ```
 
-3. **Get Parking Spot Details**
-   - **GET** `/api/parking-spots/{parkingSpotId}`
-   - Response:
+3. **Update Parking Spot Detail**
+   - **PUT** `/api/spots/{spotId}`
+   - **Allowed role**: Garage Admin
+   - **Request Headers**: `Authorization: Bearer <accessToken>`
+   - **Request Body**:
     ```json
     {
-      "success": true,
-      "data": {
-        "id": 1,
-        "garageId": 1,
-        "location": "A1",
-        "status": "available"
-      }
-    }
-    ```
-
-4. **Update Parking Spot Status**
-   - **PUT** `/api/parking-spots/{parkingSpotId}`
-   - Headers:
-     - `Authorization`: `Bearer <admin_token>` // JWT token for admin authentication
-   - Request Body:
-    ```json
-    {
-      "status": "occupied" // or "available"
+      "name": "A1 New Name"
     }
     ```
    - Response:
@@ -535,18 +522,18 @@ Contributions are welcome! If you would like to contribute to this project, plea
       "message": "Parking spot status updated successfully",
       "data": {
         "id": 1,
-        "garageId": 1,
-        "location": "A1",
-        "status": "occupied"
+        "garageID": 1,
+        "name": "A1 New Name",
+        "reserved": false,
       }
     }
     ```
 
-5. **Delete a Parking Spot**
-   - **DELETE** `/api/parking-spots/{parkingSpotId}`
-   - Headers:
-     - `Authorization`: `Bearer <admin_token>` // JWT token for admin authentication
-   - Response:
+4. **Delete a Parking Spot**
+   - **DELETE** `/api/spots/{spotId}`
+   - **Allowed role**: Garage Admin
+   - **Request Headers**: `Authorization: Bearer <accessToken>`authentication
+   - **Response**:
     ```json
     {
       "success": true,

@@ -1,6 +1,9 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { EnumHttpMethod } from '../../../config/enums';
 import { methodNotAllowedHandler } from '../../utils/http';
+import ParkingSpotController from './controller';
+
+const parkingSpotController = new ParkingSpotController();
 
 const spotsRoute = (req: IncomingMessage, res: ServerResponse) => {
   switch (req.method) {
@@ -11,7 +14,7 @@ const spotsRoute = (req: IncomingMessage, res: ServerResponse) => {
 
     // Open New Garage - by Garage Admin
     case EnumHttpMethod.POST:
-      // garageController.createGarage(req, res);
+      parkingSpotController.createParkingSpot(req, res);
       break;
 
     // Update Garage - by Garage Admin
